@@ -1,18 +1,8 @@
-import { pgTable, uuid, text, integer, boolean, timestamp, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, integer, boolean, timestamp, pgEnum, unique } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Enums
-export const dayOfWeekEnum = pgEnum('day_of_week', [
-  'SUNDAY',
-  'MONDAY', 
-  'TUESDAY',
-  'WEDNESDAY',
-  'THURSDAY',
-  'FRIDAY',
-  'SATURDAY'
-]);
-
-export const meetingStatusEnum = pgEnum('meeting_status', [
+export const bookingStatusEnum = pgEnum('booking_status', [
   'SCHEDULED',
   'CANCELLED'
 ]);
@@ -28,74 +18,47 @@ export const users = pgTable('users', {
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
-// Availability table
-export const availability = pgTable('availability', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
-  timeGap: integer('time_gap').default(30).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull()
-});
-
-// Day Availability table
-export const dayAvailability = pgTable('day_availability', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  availabilityId: uuid('availability_id').references(() => availability.id, { onDelete: 'cascade' }),
-  day: dayOfWeekEnum('day').notNull(),
-  startTime: timestamp('start_time').notNull(),
-  endTime: timestamp('end_time').notNull(),
-  isAvailable: boolean('is_available').default(true).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull()
-});
-
 // Events table
 export const events = pgTable('events', {
   id: uuid('id').primaryKey().defaultRandom(),
   title: text('title').notNull(),
   description: text('description'),
-  duration: integer('duration').default(30).notNull(),
+  isPrivate: boolean('is_private').default(false).notNull(),
   userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
-// Meetings table
-export const meetings = pgTable('meetings', {
+// Event Slots table
+export const eventSlots = pgTable('event_slots', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  eventId: uuid('event_id').references(() => events.id, { onDelete: 'cascade' }),
+  startTime: timestamp('start_time').notNull(),
+  endTime: timestamp('end_time').notNull(),
+  maxBookings: integer('max_bookings').default(1).notNull(),
+  currentBookings: integer('current_bookings').default(0).notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Bookings table
+export const bookings = pgTable('bookings', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  slotId: uuid('slot_id').references(() => eventSlots.id, { onDelete: 'cascade' }),
   eventId: uuid('event_id').references(() => events.id, { onDelete: 'cascade' }),
   guestName: text('guest_name').notNull(),
   guestEmail: text('guest_email').notNull(),
-  startTime: timestamp('start_time').notNull(),
-  endTime: timestamp('end_time').notNull(),
-  status: meetingStatusEnum('status').default('SCHEDULED').notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull()
-});
+  status: bookingStatusEnum('status').default('SCHEDULED').notNull(),
+  bookedAt: timestamp('booked_at').defaultNow().notNull()
+}, (table) => ({
+  // Unique constraint to prevent double booking: same email + slot
+  uniqueEmailSlot: unique().on(table.guestEmail, table.slotId)
+}));
 
 // Relations
-export const usersRelations = relations(users, ({ one, many }) => ({
-  availability: one(availability, {
-    fields: [users.id],
-    references: [availability.userId]
-  }),
+export const usersRelations = relations(users, ({ many }) => ({
   events: many(events)
-}));
-
-export const availabilityRelations = relations(availability, ({ one, many }) => ({
-  user: one(users, {
-    fields: [availability.userId],
-    references: [users.id]
-  }),
-  days: many(dayAvailability)
-}));
-
-export const dayAvailabilityRelations = relations(dayAvailability, ({ one }) => ({
-  availability: one(availability, {
-    fields: [dayAvailability.availabilityId],
-    references: [availability.id]
-  })
 }));
 
 export const eventsRelations = relations(events, ({ one, many }) => ({
@@ -103,16 +66,25 @@ export const eventsRelations = relations(events, ({ one, many }) => ({
     fields: [events.userId],
     references: [users.id]
   }),
-  meetings: many(meetings)
+  slots: many(eventSlots),
+  bookings: many(bookings)
 }));
 
-export const meetingsRelations = relations(meetings, ({ one }) => ({
-  user: one(users, {
-    fields: [meetings.userId],
-    references: [users.id]
+export const eventSlotsRelations = relations(eventSlots, ({ one, many }) => ({
+  event: one(events, {
+    fields: [eventSlots.eventId],
+    references: [events.id]
+  }),
+  bookings: many(bookings)
+}));
+
+export const bookingsRelations = relations(bookings, ({ one }) => ({
+  slot: one(eventSlots, {
+    fields: [bookings.slotId],
+    references: [eventSlots.id]
   }),
   event: one(events, {
-    fields: [meetings.eventId],
+    fields: [bookings.eventId],
     references: [events.id]
   })
 }));
@@ -120,13 +92,11 @@ export const meetingsRelations = relations(meetings, ({ one }) => ({
 // Export all tables for Drizzle client
 export const finalSchema = {
   users,
-  availability,
-  dayAvailability,
   events,
-  meetings,
+  eventSlots,
+  bookings,
   usersRelations,
-  availabilityRelations,
-  dayAvailabilityRelations,
   eventsRelations,
-  meetingsRelations
+  eventSlotsRelations,
+  bookingsRelations
 };
