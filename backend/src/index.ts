@@ -1,23 +1,29 @@
 import { Hono } from 'hono'
-import { Frontend } from './config';
-import { drizzle } from 'drizzle-orm/node-postgres'
-import { finalSchema } from './db/schema';
-import { cors } from 'hono/cors';
+import { Frontend } from './config'
+import { drizzle } from 'drizzle-orm/postgres-js'
+import { finalSchema } from './db/schema'
+import { cors } from 'hono/cors'
+import { userRouter } from './routes/users'
+import postgres  from 'postgres'
 
 function dbBindingType(connectionString : string){
-  return drizzle(connectionString, {
+  const pool =  postgres(connectionString,{
+    idle_timeout:10,
+    max:1,
+  });
+  return drizzle(pool, {
     schema: finalSchema
   });
 }
 
 export type RootVariables={
-    db: ReturnType<typeof dbBindingType>
-}
+    db: ReturnType<typeof dbBindingType>;
+};
 
 const app = new Hono<{
   Bindings:CloudflareBindings,
   Variables:RootVariables
-}>().basePath('/v1')
+}>().basePath('/v1');
 
 // app.use(cors({
 //   allowHeaders: ['Content-Type', 'Authorization'],
@@ -31,4 +37,18 @@ app.get('/', (c) => {
   return c.text('Hello Hono!')
 })
 
-export default app
+app.use('*', async (c, next) => {
+  const connectionString = c.env.DB_URL;
+  if (!connectionString) {
+    return c.json({ error: 'Database connection string not found' }, 500);
+  }
+  
+  const db = dbBindingType(connectionString);
+  c.set('db', db);
+  
+  await next();
+});
+
+app.route('/users', userRouter);
+
+export default app;
