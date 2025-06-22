@@ -2,7 +2,7 @@
   "name": "backend",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy --minify",
+    "cf-deploy": "wrangler deploy --minify",
     "db:gen": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
