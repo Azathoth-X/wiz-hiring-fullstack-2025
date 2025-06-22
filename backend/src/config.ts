@@ -1,0 +1,1 @@
+export const Frontend = "http://localhost:5137"
