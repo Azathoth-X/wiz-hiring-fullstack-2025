@@ -1,11 +1,11 @@
 {
-  "id": "aafdd451-4c38-4663-af69-57c319708107",
+  "id": "37552b83-5408-4916-8ead-30d3c6826793",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.availability": {
-      "name": "availability",
+    "public.bookings": {
+      "name": "bookings",
       "schema": "",
       "columns": {
         "id": {
@@ -15,28 +15,40 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "user_id": {
-          "name": "user_id",
+        "slot_id": {
+          "name": "slot_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
-        "time_gap": {
-          "name": "time_gap",
-          "type": "integer",
+        "event_id": {
+          "name": "event_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "guest_name": {
+          "name": "guest_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "guest_email": {
+          "name": "guest_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "booking_status",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
-          "default": 30
+          "default": "'SCHEDULED'"
         },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
+        "booked_at": {
+          "name": "booked_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -45,12 +57,25 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "availability_user_id_users_id_fk": {
-          "name": "availability_user_id_users_id_fk",
-          "tableFrom": "availability",
-          "tableTo": "users",
+        "bookings_slot_id_event_slots_id_fk": {
+          "name": "bookings_slot_id_event_slots_id_fk",
+          "tableFrom": "bookings",
+          "tableTo": "event_slots",
           "columnsFrom": [
-            "user_id"
+            "slot_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "bookings_event_id_events_id_fk": {
+          "name": "bookings_event_id_events_id_fk",
+          "tableFrom": "bookings",
+          "tableTo": "events",
+          "columnsFrom": [
+            "event_id"
           ],
           "columnsTo": [
             "id"
@@ -60,13 +85,22 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "bookings_guest_email_slot_id_unique": {
+          "name": "bookings_guest_email_slot_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "guest_email",
+            "slot_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.day_availability": {
-      "name": "day_availability",
+    "public.event_slots": {
+      "name": "event_slots",
       "schema": "",
       "columns": {
         "id": {
@@ -76,18 +110,11 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "availability_id": {
-          "name": "availability_id",
+        "event_id": {
+          "name": "event_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
-        },
-        "day": {
-          "name": "day",
-          "type": "day_of_week",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
         },
         "start_time": {
           "name": "start_time",
@@ -101,8 +128,22 @@
           "primaryKey": false,
           "notNull": true
         },
-        "is_available": {
-          "name": "is_available",
+        "max_bookings": {
+          "name": "max_bookings",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "current_bookings": {
+          "name": "current_bookings",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "is_active": {
+          "name": "is_active",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -125,12 +166,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "day_availability_availability_id_availability_id_fk": {
-          "name": "day_availability_availability_id_availability_id_fk",
-          "tableFrom": "day_availability",
-          "tableTo": "availability",
+        "event_slots_event_id_events_id_fk": {
+          "name": "event_slots_event_id_events_id_fk",
+          "tableFrom": "event_slots",
+          "tableTo": "events",
           "columnsFrom": [
-            "availability_id"
+            "event_id"
           ],
           "columnsTo": [
             "id"
@@ -168,12 +209,12 @@
           "primaryKey": false,
           "notNull": false
         },
-        "duration": {
-          "name": "duration",
-          "type": "integer",
+        "is_private": {
+          "name": "is_private",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": true,
-          "default": 30
+          "default": false
         },
         "user_id": {
           "name": "user_id",
@@ -204,111 +245,6 @@
           "tableTo": "users",
           "columnsFrom": [
             "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.meetings": {
-      "name": "meetings",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "event_id": {
-          "name": "event_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "guest_name": {
-          "name": "guest_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "guest_email": {
-          "name": "guest_email",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "start_time": {
-          "name": "start_time",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "end_time": {
-          "name": "end_time",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "meeting_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'SCHEDULED'"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "meetings_user_id_users_id_fk": {
-          "name": "meetings_user_id_users_id_fk",
-          "tableFrom": "meetings",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "meetings_event_id_events_id_fk": {
-          "name": "meetings_event_id_events_id_fk",
-          "tableFrom": "meetings",
-          "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
           ],
           "columnsTo": [
             "id"
@@ -398,21 +334,8 @@
     }
   },
   "enums": {
-    "public.day_of_week": {
-      "name": "day_of_week",
-      "schema": "public",
-      "values": [
-        "SUNDAY",
-        "MONDAY",
-        "TUESDAY",
-        "WEDNESDAY",
-        "THURSDAY",
-        "FRIDAY",
-        "SATURDAY"
-      ]
-    },
-    "public.meeting_status": {
-      "name": "meeting_status",
+    "public.booking_status": {
+      "name": "booking_status",
       "schema": "public",
       "values": [
         "SCHEDULED",
