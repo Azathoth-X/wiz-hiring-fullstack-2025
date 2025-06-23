@@ -7,6 +7,7 @@ import { ThemeProvider } from './components/theme-provider.tsx'
 import Layout from './components/layout.tsx'
 import EventsPage from './pages/events.tsx'
 import EventDetailsPage from './pages/event-details.tsx'
+import CreateEventPage from './pages/create-event.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -17,6 +18,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path='/' element={<App/>}/>
             <Route path='/events' element={<EventsPage/>}/>
             <Route path='/events/:id' element={<EventDetailsPage/>}/>
+            <Route path='/create-event' element={<CreateEventPage/>}/>
           </Route>
         </Routes>
       </BrowserRouter>
