@@ -13,9 +13,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Calendar, Users, Lock, Globe, ArrowLeft } from "lucide-react"
+import { Calendar, Users, Lock, Globe, ArrowLeft  } from "lucide-react"
 import { apiClient, API_CONFIG } from "@/config/api"
 import { formatDateInTimezone, formatDateRangeInTimezone } from "@/utils/timezone"
+import { useUserStore } from "@/stores/user-store"
+import NotAuth from "@/components/not-auth"
 
 interface EventSlot {
   id: string
@@ -42,6 +44,7 @@ interface EventDetails {
 
 export default function EventDetailsPage() {
   const { id } = useParams<{ id: string }>()
+  const { user } = useUserStore()
   const navigate = useNavigate()
   const [event, setEvent] = useState<EventDetails | null>(null)
   const [loading, setLoading] = useState(true)
@@ -217,6 +220,11 @@ export default function EventDetailsPage() {
     setBookingSuccess(false)
   }
 
+  if (!user?.id) {
+    return (
+      <NotAuth/>
+    )
+  }
   if (loading) {
     return (
       <div className="p-6">
