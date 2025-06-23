@@ -39,16 +39,22 @@ export const apiClient = {
     }
     return response.json()
   },
-  
   post: async (endpoint: string, data: Record<string, unknown>) => {
     const response = await fetch(`${API_CONFIG.BASE_URL}${endpoint}`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(data)
     })
+    
+    const responseData = await response.json()
+    
     if (!response.ok) {
+      if (endpoint.includes('/users/signin') || endpoint.includes('/users/signup')) {
+        throw { status: response.status, data: responseData }
+      }
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    return response.json()
+    
+    return responseData
   }
 }

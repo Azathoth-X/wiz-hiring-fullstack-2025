@@ -12,6 +12,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { CalendarIcon, PlusIcon, TrashIcon } from 'lucide-react'
 import { apiClient, API_CONFIG } from '@/config/api'
+import { useUserStore } from '@/stores/user-store'
+import NotAuth from '@/components/not-auth'
 
 interface EventSlot {
   id: string
@@ -23,6 +25,7 @@ interface EventSlot {
 
 export default function CreateEvent() {
   const navigate = useNavigate()
+  const { user } = useUserStore()
   const [isLoading, setIsLoading] = useState(false)
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
   const [createdEventId, setCreatedEventId] = useState<string>('')
@@ -156,6 +159,12 @@ export default function CreateEvent() {
     navigate(`/events/${createdEventId}`)
   }
 
+  if(!user?.id){
+    return(
+        <NotAuth/>
+    )
+  }
+  
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="mb-8">
