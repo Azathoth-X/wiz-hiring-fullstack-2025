@@ -3,7 +3,8 @@ import { jwtDecode } from 'jwt-decode'
 
 interface User {
   id: string,
-  username: string
+  username: string,
+  name?: string
 }
 
 interface UserState {
@@ -12,6 +13,7 @@ interface UserState {
   setUser: (user: User | null) => void,
   loadUserFromToken: () => void
   logout: () => void,
+  getToken: () => string | null
 }
 
 export const useUserStore = create<UserState>((set) => ({
@@ -35,9 +37,14 @@ export const useUserStore = create<UserState>((set) => ({
       localStorage.removeItem('bookmyslot_token')
     }
   },
+
   logout: () => {
     localStorage.removeItem('bookmyslot_token')
     set({ user: null, isAuthenticated: false })
+  },
+
+  getToken: () => {
+    return localStorage.getItem('bookmyslot_token')
   },
 }))
 

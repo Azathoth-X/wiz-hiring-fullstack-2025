@@ -67,11 +67,10 @@ export function AppSidebar() {
             <ModeToggle />
             <TimezoneToggle />
           </div>
-          
-          <div className="flex items-center gap-2 px-2 py-1.5 text-sm">
+            <div className="flex items-center gap-2 px-2 py-1.5 text-sm">
             <User2 className="h-4 w-4" />
             <span className="truncate">
-              {user?.username  || 'Guest User'}
+              {user?.name || user?.username || 'Guest User'}
             </span>
           </div>
         </div>

@@ -1,6 +1,6 @@
 // Backend API configuration
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8787',
+  BASE_URL: 'https://bookmyslot.tankkmaster25.workers.dev/v1',
   ENDPOINTS: {
     EVENTS: {
       LIST: '/events/list',
@@ -14,10 +14,26 @@ export const API_CONFIG = {
   }
 } as const
 
+// Helper function to get auth headers
+const getAuthHeaders = (): Record<string, string> => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
+  
+  const token = localStorage.getItem('bookmyslot_token')
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+  
+  return headers
+}
+
 // API helper functions
 export const apiClient = {
   get: async (endpoint: string) => {
-    const response = await fetch(`${API_CONFIG.BASE_URL}${endpoint}`)
+    const response = await fetch(`${API_CONFIG.BASE_URL}${endpoint}`, {
+      headers: getAuthHeaders()
+    })
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -27,9 +43,7 @@ export const apiClient = {
   post: async (endpoint: string, data: Record<string, unknown>) => {
     const response = await fetch(`${API_CONFIG.BASE_URL}${endpoint}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data)
     })
     if (!response.ok) {

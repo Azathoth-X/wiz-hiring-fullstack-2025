@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog"
 import { Calendar, Users, Lock, Globe, ArrowLeft } from "lucide-react"
 import { apiClient, API_CONFIG } from "@/config/api"
+import { formatDateInTimezone, formatDateRangeInTimezone } from "@/utils/timezone"
 
 interface EventSlot {
   id: string
@@ -135,8 +136,7 @@ export default function EventDetailsPage() {
             ]
           }
           
-          setEvent(mockEvent)
-        }
+          setEvent(mockEvent)        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load event')
       } finally {
@@ -146,25 +146,6 @@ export default function EventDetailsPage() {
 
     fetchEventDetails()
   }, [id])
-
-  const formatDateTime = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(date)
-  }
-
-  const formatTimeRange = (start: Date, end: Date) => {
-    const timeFormat = new Intl.DateTimeFormat('en-US', {
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-    return `${timeFormat.format(start)} - ${timeFormat.format(end)}`
-  }
 
   const handleBookSlot = (slot: EventSlot) => {
     setSelectedSlot(slot)
@@ -325,7 +306,14 @@ export default function EventDetailsPage() {
             )}
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Calendar className="h-4 w-4" />
-              <span>Created {formatDateTime(event.createdAt)}</span>
+              <span>Created {formatDateInTimezone(event.createdAt, {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}</span>
             </div>
           </CardContent>
         </Card>
@@ -347,14 +335,19 @@ export default function EventDetailsPage() {
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg">
-                        {formatTimeRange(slot.startTime, slot.endTime)}
+                        {formatDateRangeInTimezone(slot.startTime, slot.endTime)}
                       </CardTitle>
                       <Badge variant={slot.isAvailable && slot.isActive ? "default" : "secondary"}>
                         {!slot.isActive ? "Inactive" : slot.isAvailable ? "Available" : "Full"}
                       </Badge>
                     </div>
                     <CardDescription>
-                      {formatDateTime(slot.startTime)}
+                      {formatDateInTimezone(slot.startTime, {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -401,9 +394,7 @@ export default function EventDetailsPage() {
               <DialogTitle>Book Time Slot</DialogTitle>
               <DialogDescription>
                 {selectedSlot && (
-                  <>
-                    Booking for {formatTimeRange(selectedSlot.startTime, selectedSlot.endTime)} on{' '}
-                    {formatDateTime(selectedSlot.startTime)}
+                  <>                    Booking for {formatDateRangeInTimezone(selectedSlot.startTime, selectedSlot.endTime)}
                   </>
                 )}
               </DialogDescription>

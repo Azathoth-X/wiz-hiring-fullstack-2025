@@ -1,6 +1,7 @@
-import { Clock, Users, Lock, Globe } from "lucide-react"
+import { Clock, Users, Lock, Globe, Calendar } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { formatDateInTimezone } from "@/utils/timezone"
 
 interface EventCardProps {
   event: {
@@ -24,15 +25,6 @@ export function EventCard({ event, onViewDetails, onBook }: EventCardProps) {
   const isFullyBooked = event.availableSlots === 0
   const occupancyPercentage = ((event.totalSlots - event.availableSlots) / event.totalSlots) * 100
 
-//   const formatDate = (date: Date) => {
-//     return new Intl.DateTimeFormat('en-US', {
-//       month: 'short',
-//       day: 'numeric',
-//       year: 'numeric',
-//       hour: '2-digit',
-//       minute: '2-digit'
-//     }).format(date)
-//   }
 
   return (
     <Card className="w-full max-w-md transition-all hover:shadow-md">
@@ -69,13 +61,15 @@ export function EventCard({ event, onViewDetails, onBook }: EventCardProps) {
             </div>
             <span>by {event.creator.name}</span>
           </div>
-        )}
-
-        {/* Date */}
-        {/* <div className="flex items-center gap-2 text-sm">
+        )}        {/* Date */}
+        <div className="flex items-center gap-2 text-sm">
           <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span>{formatDate(event.createdAt)}</span>
-        </div> */}
+          <span>Created {formatDateInTimezone(event.createdAt, { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric' 
+          })}</span>
+        </div>
 
         {/* Slots Info */}
         <div className="space-y-2">
