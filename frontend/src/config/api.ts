@@ -1,6 +1,6 @@
 // Backend API configuration
 export const API_CONFIG = {
-  BASE_URL: 'https://bookmyslot.tankkmaster25.workers.dev/v1',
+  BASE_URL: import.meta.env.VITE_API_BASE_URL||'https://bookmyslot.tankkmaster25.workers.dev/v1',
   ENDPOINTS: {
     EVENTS: {
       LIST: '/events/list',

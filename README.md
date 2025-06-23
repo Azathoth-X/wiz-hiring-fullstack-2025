@@ -1,7 +1,7 @@
 
 # Live links:
-## Frontend: [bookmyslot](bookmyslot.pages.dev) | https://bookmyslot.pages.dev
-## Backend: [backend](bookmyslot.tankkmaster25.workers.dev) | https://bookmyslot.tankkmaster25.workers.dev
+### Frontend: [bookmyslot](bookmyslot.pages.dev) | https://bookmyslot.pages.dev
+### Backend: [backend](bookmyslot.tankkmaster25.workers.dev) | https://bookmyslot.tankkmaster25.workers.dev
 # BookMySlot – Fullstack Hiring Challenge Submission
 
 This project is a submission for the WizCommerce Fullstack Hiring Challenge, implementing a simple scheduling application similar to Calendly.
@@ -67,7 +67,7 @@ The backend implements the following API endpoints:
 | POST   | `/users/signin`          | Authenticate a user and return JWT           | Implemented |
 | POST   | `/events`                | Create a new event (requires authentication) | Implemented |
 | GET    | `/events`                | List all public events                       | Implemented |
-| GET    | `/events/:id`            | Get details for a specific event + slots     | Implemented |
+| GET    | `/events/details/:id`    | Get details for a specific event + slots     | Implemented |
 | POST   | `/events/:id/bookings`   | Book a slot for a specific event             | Implemented |
 | GET    | `/events/bookings`       | View bookings for the authenticated user     | Implemented |
 
@@ -138,29 +138,6 @@ The backend implements the following API endpoints:
 ## 🚗 Deployment Instructions
 
 Follow the instructions in the original `assingment.md` for deploying the frontend and backend to platforms like Vercel, Render, Railway, Cloudflare Pages, etc. Ensure your environment variables (like `JWT_SECRET` for the backend and `VITE_API_BASE_URL` for the frontend) are configured correctly on your hosting platforms.
-
-## ✨ Bonus Features (Optional)
-
-The following bonus features were suggested in the assignment but not explicitly implemented in the core development process covered in the chat:
-
-*   Email confirmation on booking
-*   Realtime booking updates
-*   Event branding with image upload
-*   Google Calendar sync (mocked is fine)
-*   Google login or forgot password
-
-## 🔍 Evaluation Rubric
-
-(Copied directly from `assingment.md`)
-
-| Area             | What We're Looking For                        |
-| :--------------- | :-------------------------------------------- |
-| ✅ Functionality  | All core features implemented, no major bugs  |
-| 📚 Code Quality  | Clear structure, modular design, comments     |
-| 🎨 UI/UX         | Responsive design, form feedback, good layout |
-| ⚙️ API Design    | RESTful, validation, edge-case handling       |
-| 🚁 Deployment    | Working links, good README, .env support      |
-| 📣 Communication | Commit hygiene, comments, README clarity      |
 
 ## 📄 Submission Checklist
 
