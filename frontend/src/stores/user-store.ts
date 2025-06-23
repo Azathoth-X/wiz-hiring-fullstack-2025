@@ -48,5 +48,4 @@ export const useUserStore = create<UserState>((set) => ({
   },
 }))
 
-// Initialize user from token on store creation
 useUserStore.getState().loadUserFromToken()

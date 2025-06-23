@@ -130,9 +130,6 @@ export default function LoginPage() {
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "Signing in..." : "Login"}
                   </Button>
-                  <Button variant="outline" className="w-full" type="button" disabled={isLoading}>
-                    Login with Google
-                  </Button>
                 </div>
               </div>
               

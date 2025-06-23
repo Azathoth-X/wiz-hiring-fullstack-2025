@@ -1,8 +1,17 @@
+import { useEffect } from "react"
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Outlet } from "react-router"
+import { useUserStore } from "@/stores/user-store"
 
 export default function Layout() {
+  const { loadUserFromToken } = useUserStore()
+
+  useEffect(() => {
+    // Load user from token on app startup
+    loadUserFromToken()
+  }, [loadUserFromToken])
+
   return (
     <SidebarProvider>
       <AppSidebar />

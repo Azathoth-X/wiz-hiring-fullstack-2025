@@ -28,9 +28,10 @@ export function TimezoneToggle() {
   return (
     <DropdownMenu >
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" title={`Current timezone: ${currentTimezone.label}`}>
+        <Button variant="outline" size="default" title={`Current timezone: ${currentTimezone.label}`}>
           <Clock className="h-[1.2rem] w-[1.2rem]" />
           <span className="sr-only">Change timezone</span>
+          {currentTimezone.label}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="center">

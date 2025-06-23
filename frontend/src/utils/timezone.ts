@@ -19,7 +19,6 @@ export const formatDateInTimezone = (
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    timeZoneName: 'short',
     ...options
   }
   
@@ -38,7 +37,6 @@ export const formatTimeInTimezone = (dateInput: string | Date | number): string 
   return formatDateInTimezone(dateInput, {
     hour: '2-digit',
     minute: '2-digit',
-    timeZoneName: 'short'
   })
 }
 
@@ -80,7 +78,6 @@ export const formatDateRangeInTimezone = (
     const endTime = new Intl.DateTimeFormat('en-US', {
       hour: '2-digit',
       minute: '2-digit',
-      timeZoneName: 'short',
       timeZone: timezone
     }).format(end)
     
@@ -101,7 +98,6 @@ export const formatDateRangeInTimezone = (
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    timeZoneName: 'short'
   })
   
   return `${startStr} - ${endStr}`

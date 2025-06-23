@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -8,6 +8,7 @@ import { apiClient, API_CONFIG } from '@/config/api'
 import { formatDateRangeInTimezone, formatDateInTimezone } from '@/utils/timezone'
 import { useUserStore } from '@/stores/user-store'
 import NotAuth from '@/components/not-auth'
+import { useTimezoneStore } from '@/stores/timezone-store'
 
 interface Booking {
   id: string
@@ -33,6 +34,9 @@ export default function MyBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { timezone } = useTimezoneStore()
+
+  useCallback(()=>{},[timezone])
 
   useEffect(() => {
     const fetchBookings = async () => {

@@ -4,7 +4,7 @@ export const API_CONFIG = {
   ENDPOINTS: {
     EVENTS: {
       LIST: '/events/list',
-      DETAILS: (id: string) => `/events/${id}`,
+      DETAILS: (id: string) => `/events/details/${id}`,
       BOOK_SLOT: (id: string) => `/events/${id}/bookings`,
       CREATE: '/events'
     },

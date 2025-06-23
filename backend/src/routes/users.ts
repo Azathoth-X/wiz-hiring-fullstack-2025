@@ -6,7 +6,7 @@ import { sign } from 'hono/jwt'
 import { hashPassword, comparePassword } from '../utils/auth'
 import { signupSchema, signinSchema, SignupInput, SigninInput } from '../validations/user'
 import { ZodError } from 'zod'
-import { JWT_EXPIRATION_TIME } from '../config'
+// import { JWT_EXPIRATION_TIME } from '../config'
 
 
 const userRouter = new Hono<{
@@ -63,7 +63,7 @@ userRouter.post('/signup', async (c) => {
     const payload = {
       id: newUser[0].id,
       username: newUser[0].username,
-      exp: JWT_EXPIRATION_TIME, 
+      // exp: JWT_EXPIRATION_TIME, 
     };
 
     const secret = c.env?.JWT_SECRET 
@@ -121,7 +121,7 @@ userRouter.post('/signin', async (c) => {
     const payload = {
       id: user[0].id,
       username: user[0].username,
-      exp:JWT_EXPIRATION_TIME,
+      // exp:JWT_EXPIRATION_TIME,
     };
 
     const secret = c.env?.JWT_SECRET ;

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useParams, useNavigate } from "react-router"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -16,6 +16,7 @@ import {
 import { Calendar, Users, Lock, Globe, ArrowLeft  } from "lucide-react"
 import { apiClient, API_CONFIG } from "@/config/api"
 import { formatDateInTimezone, formatDateRangeInTimezone } from "@/utils/timezone"
+import { useTimezoneStore } from "@/stores/timezone-store"
 
 interface EventSlot {
   id: string
@@ -43,6 +44,7 @@ interface EventDetails {
 export default function EventDetailsPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { timezone } = useTimezoneStore()
   const [event, setEvent] = useState<EventDetails | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -73,70 +75,10 @@ export default function EventDetailsPage() {
             }))
           }
           setEvent(eventData)
-        } catch {
-          // If API fails, use mock data for testing
+        }
+        catch {
           console.log('API failed, using mock data for testing')
-          
-          const mockEvent: EventDetails = {
-            id: id,
-            title: "React Workshop: Advanced Patterns",
-            description: "Learn advanced React patterns including custom hooks, context patterns, and performance optimization techniques. This hands-on workshop will cover real-world scenarios and best practices.",
-            isPrivate: id === 'private-event',
-            createdAt: new Date("2025-06-25T14:00:00Z"),
-            creator: {
-              name: "John Smith",
-              username: "johnsmith"
-            },
-            slots: [
-              {
-                id: "slot-1",
-                startTime: new Date("2025-06-25T14:00:00Z"),
-                endTime: new Date("2025-06-25T15:30:00Z"),
-                maxBookings: 20,
-                currentBookings: 5,
-                isActive: true,
-                isAvailable: true
-              },
-              {
-                id: "slot-2",
-                startTime: new Date("2025-06-25T16:00:00Z"),
-                endTime: new Date("2025-06-25T17:30:00Z"),
-                maxBookings: 20,
-                currentBookings: 18,
-                isActive: true,
-                isAvailable: true
-              },
-              {
-                id: "slot-3",
-                startTime: new Date("2025-06-26T10:00:00Z"),
-                endTime: new Date("2025-06-26T11:30:00Z"),
-                maxBookings: 15,
-                currentBookings: 15,
-                isActive: true,
-                isAvailable: false
-              },
-              {
-                id: "slot-4",
-                startTime: new Date("2025-06-26T14:00:00Z"),
-                endTime: new Date("2025-06-26T15:30:00Z"),
-                maxBookings: 25,
-                currentBookings: 2,
-                isActive: true,
-                isAvailable: true
-              },
-              {
-                id: "slot-5",
-                startTime: new Date("2025-06-27T09:00:00Z"),
-                endTime: new Date("2025-06-27T10:30:00Z"),
-                maxBookings: 12,
-                currentBookings: 0,
-                isActive: false,
-                isAvailable: false
-              }
-            ]
-          }
-          
-          setEvent(mockEvent)        }
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load event')
       } finally {
@@ -146,6 +88,8 @@ export default function EventDetailsPage() {
 
     fetchEventDetails()
   }, [id])
+
+  useCallback(()=>{},[timezone])
 
   const handleBookSlot = (slot: EventSlot) => {
     setSelectedSlot(slot)

@@ -3,8 +3,11 @@ import { Link } from "react-router"
 import { Button } from "@/components/ui/button"
 import { Calendar, Users, Lock } from "lucide-react"
 import { JoinPrivateEventDialog } from "@/components/join-private-event-dialog"
+import { useUserStore } from "@/stores/user-store"
 
 function App() {
+  const { isAuthenticated } = useUserStore()
+  
   return (
     <div className="p-6">
       <div className="max-w-4xl mx-auto space-y-8">
@@ -17,6 +20,20 @@ function App() {
             Manage your schedule efficiently with our intuitive platform.
           </p>
         </div>
+
+        {!isAuthenticated && (
+          <div className="text-center space-y-4 py-8 border rounded-lg bg-muted/30">
+            <h2 className="text-xl font-semibold">Get Started</h2>
+            <div className="flex gap-4 justify-center">
+              <Button asChild>
+                <Link to="/signup">Sign Up</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/login">Login</Link>
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Link to="/events">
@@ -59,14 +76,27 @@ function App() {
         <div className="text-center space-y-4 pt-8">
           <h2 className="text-2xl font-semibold">Ready to get started?</h2>
           <div className="flex gap-4 justify-center">
-            <Button asChild size="lg">
-              <Link to="/events">Browse Events</Link>
-            </Button>
-            <JoinPrivateEventDialog>
-              <Button variant="outline" size="lg">
-                Join Private Event
-              </Button>
-            </JoinPrivateEventDialog>
+            {isAuthenticated ? (
+              <>
+                <Button asChild size="lg">
+                  <Link to="/events">Browse Events</Link>
+                </Button>
+                <JoinPrivateEventDialog>
+                  <Button variant="outline" size="lg">
+                    Join Private Event
+                  </Button>
+                </JoinPrivateEventDialog>
+              </>
+            ) : (
+              <>
+                <Button asChild size="lg">
+                  <Link to="/signup">Get Started</Link>
+                </Button>
+                <Button variant="outline" size="lg" asChild>
+                  <Link to="/login">Login</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

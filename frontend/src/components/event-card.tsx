@@ -2,6 +2,8 @@ import { Clock, Users, Lock, Globe, Calendar } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { formatDateInTimezone } from "@/utils/timezone"
+import { useCallback } from "react"
+import { useTimezoneStore } from "@/stores/timezone-store"
 
 interface EventCardProps {
   event: {
@@ -24,8 +26,9 @@ interface EventCardProps {
 export function EventCard({ event, onViewDetails, onBook }: EventCardProps) {
   const isFullyBooked = event.availableSlots === 0
   const occupancyPercentage = ((event.totalSlots - event.availableSlots) / event.totalSlots) * 100
-
-
+  const { timezone } = useTimezoneStore()
+  
+  useCallback(()=>{},[timezone])
   return (
     <Card className="w-full max-w-md transition-all hover:shadow-md">
       <CardHeader>
