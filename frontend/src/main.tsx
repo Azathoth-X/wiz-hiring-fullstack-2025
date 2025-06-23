@@ -5,6 +5,7 @@ import App from './App.tsx'
 import { BrowserRouter, Route, Routes } from 'react-router'
 import { ThemeProvider } from './components/theme-provider.tsx'
 import Layout from './components/layout.tsx'
+import EventsPage from './pages/events.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -13,6 +14,7 @@ createRoot(document.getElementById('root')!).render(
         <Routes>
           <Route element={<Layout/>}>
             <Route path='/' element={<App/>}/>
+            <Route path='/events' element={<EventsPage/>}/>
           </Route>
         </Routes>
       </BrowserRouter>

@@ -1,4 +1,5 @@
 import { Calendar, Home, PlusIcon, User2 } from "lucide-react"
+import { Link } from "react-router"
 
 import {
   Sidebar,
@@ -20,17 +21,17 @@ import { useUserStore } from "@/stores/user-store"
 const items = [
   {
     title: "Events",
-    url: "#",
+    url: "/events",
     icon: Home,
   },
   {
     title: "Create Event",
-    url: "#",
+    url: "/create-event",
     icon: PlusIcon,
   },
   {
     title: "My Bookings",
-    url: "#",
+    url: "/bookings",
     icon: Calendar,
   },
   
@@ -46,14 +47,13 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
+            <SidebarMenu>              {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <a href={item.url}>
+                    <Link to={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
