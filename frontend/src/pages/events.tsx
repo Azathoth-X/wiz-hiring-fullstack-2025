@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react"
+import { useNavigate } from "react-router"
 import { EventCard } from "@/components/event-card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search,  Plus } from "lucide-react"
+import { Search, Plus } from "lucide-react"
+import { JoinPrivateEventDialog } from "@/components/join-private-event-dialog"
+import { apiClient, API_CONFIG } from "@/config/api"
 
 interface Event {
   id: string
@@ -18,96 +21,23 @@ interface Event {
   availableSlots: number
 }
 
-// Mock API function
-const fetchEvents = (): Promise<Event[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const mockEvents: Event[] = [
-        {
-          id: "1",
-          title: "React Workshop: Building Modern UIs",
-          description: "Learn the latest React patterns and best practices in this hands-on workshop. We'll cover hooks, context, and performance optimization.",
-          isPrivate: false,
-          createdAt: new Date("2025-06-25T14:00:00Z"),
-          creator: {
-            name: "John Doe",
-            username: "johndoe"
-          },
-          totalSlots: 20,
-          availableSlots: 5
-        },
-        {
-          id: "2",
-          title: "Team Standup Meeting",
-          description: "Weekly team sync to discuss progress and blockers",
-          isPrivate: true,
-          createdAt: new Date("2025-06-24T09:00:00Z"),
-          creator: {
-            name: "Sarah Smith",
-            username: "sarahsmith"
-          },
-          totalSlots: 10,
-          availableSlots: 0
-        },
-        {
-          id: "3",
-          title: "Docker Fundamentals",
-          description: "Introduction to containerization with Docker. Perfect for beginners!",
-          isPrivate: false,
-          createdAt: new Date("2025-06-26T16:30:00Z"),
-          creator: {
-            name: "Mike Johnson",
-            username: "mikej"
-          },
-          totalSlots: 15,
-          availableSlots: 12
-        },
-        {
-          id: "4",
-          title: "Product Strategy Discussion",
-          description: "Quarterly planning session for the product roadmap",
-          isPrivate: true,
-          createdAt: new Date("2025-06-27T13:00:00Z"),
-          creator: {
-            name: "Emily Davis",
-            username: "emilyd"
-          },
-          totalSlots: 8,
-          availableSlots: 2
-        },
-        {
-          id: "5",
-          title: "JavaScript Deep Dive",
-          description: "Advanced JavaScript concepts: closures, prototypes, and async programming",
-          isPrivate: false,
-          createdAt: new Date("2025-06-28T10:00:00Z"),
-          creator: {
-            name: "Alex Chen",
-            username: "alexc"
-          },
-          totalSlots: 25,
-          availableSlots: 18
-        },
-        {
-          id: "6",
-          title: "Design System Review",
-          description: null,
-          isPrivate: true,
-          createdAt: new Date("2025-06-29T15:00:00Z"),
-          creator: {
-            name: "Lisa Wang",
-            username: "lisaw"
-          },
-          totalSlots: 6,
-          availableSlots: 1
-        }
-      ]
-      resolve(mockEvents)
-    }, 800) // Simulate network delay
-  })
+// API function to fetch events
+const fetchEvents = async (): Promise<Event[]> => {
+  try {
+    const response = await apiClient.get(API_CONFIG.ENDPOINTS.EVENTS.LIST)
+    return response.events.map((event: Event & { createdAt: string }) => ({
+      ...event,
+      createdAt: new Date(event.createdAt),
+      creator: event.creator || null
+    }))
+  } catch (error) {
+    console.error('Failed to fetch events:', error)
+    return []
+  }
 }
 
 export default function EventsPage() {
+  const navigate = useNavigate()
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
@@ -135,20 +65,12 @@ export default function EventsPage() {
     
     return matchesSearch 
   })
-
   const handleViewDetails = (eventId: string) => {
-    console.log("View details for event:", eventId)
-    // Navigate to event details page
+    navigate(`/events/${eventId}`)
   }
 
   const handleBookEvent = (eventId: string) => {
-    console.log("Book event:", eventId)
-    // Handle booking logic
-  }
-
-  const handleCreateEvent = () => {
-    console.log("Create new event")
-    // Navigate to create event page
+    navigate(`/events/${eventId}`)
   }
   if (loading) {
     return (
@@ -174,11 +96,12 @@ export default function EventsPage() {
             <p className="text-muted-foreground">
               Discover and book slots for upcoming events
             </p>
-          </div>
-          <Button onClick={handleCreateEvent} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Join Private Event
-          </Button>
+          </div>          <JoinPrivateEventDialog>
+            <Button className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Join Private Event
+            </Button>
+          </JoinPrivateEventDialog>
         </div>
 
         {/* Filters */}

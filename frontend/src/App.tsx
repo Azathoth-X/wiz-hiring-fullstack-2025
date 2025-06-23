@@ -1,7 +1,8 @@
 
 import { Link } from "react-router"
 import { Button } from "@/components/ui/button"
-import { Calendar, Plus, Users } from "lucide-react"
+import { Calendar, Users, Lock } from "lucide-react"
+import { JoinPrivateEventDialog } from "@/components/join-private-event-dialog"
 
 function App() {
   return (
@@ -30,17 +31,17 @@ function App() {
             </div>
           </Link>
 
-          <Link to="/create-event">
+          <JoinPrivateEventDialog>
             <div className="group p-6 rounded-lg border bg-card hover:shadow-md transition-all cursor-pointer">
               <div className="flex items-center gap-3 mb-3">
-                <Plus className="h-6 w-6 text-primary" />
-                <h3 className="text-lg font-semibold">Create Event</h3>
+                <Lock className="h-6 w-6 text-primary" />
+                <h3 className="text-lg font-semibold">Join Private Event</h3>
               </div>
               <p className="text-muted-foreground">
-                Host your own event and manage bookings
+                Join a private event using an event ID
               </p>
             </div>
-          </Link>
+          </JoinPrivateEventDialog>
 
           <Link to="/bookings">
             <div className="group p-6 rounded-lg border bg-card hover:shadow-md transition-all cursor-pointer">
@@ -61,9 +62,11 @@ function App() {
             <Button asChild size="lg">
               <Link to="/events">Browse Events</Link>
             </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link to="/create-event">Create Event</Link>
-            </Button>
+            <JoinPrivateEventDialog>
+              <Button variant="outline" size="lg">
+                Join Private Event
+              </Button>
+            </JoinPrivateEventDialog>
           </div>
         </div>
       </div>
