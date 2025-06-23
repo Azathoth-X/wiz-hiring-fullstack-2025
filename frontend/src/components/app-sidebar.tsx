@@ -71,7 +71,8 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-      </SidebarContent>      <SidebarFooter>
+      </SidebarContent>      
+      <SidebarFooter>
         <div className="p-2 space-y-2">
           <div className="flex justify-around">
             <ModeToggle />
