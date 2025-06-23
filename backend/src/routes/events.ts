@@ -4,68 +4,76 @@ import { events, eventSlots, bookings, users } from '../db/schema';
 import { eq, and, sql, desc, asc } from 'drizzle-orm';
 import { createEventSchema, bookSlotSchema, getBookingsQuerySchema, CreateEventInput, BookSlotInput } from '../validations/event';
 import { ZodError } from 'zod';
+import { verify } from 'hono/jwt';
 
-interface eventRouterBindings extends CloudflareBindings{
-  currentUserID : string
-}
+
 const eventRouter = new Hono<{
-  Bindings: eventRouterBindings;
-  Variables: RootVariables;
+  Bindings: CloudflareBindings;
+  Variables: RootVariables & {currentUserId: string};
 }>();
 
+// GET /events/bookings (private) - Get User Bookings
+eventRouter.get('/bookings',
+  async (c ,next) => {
+    const authHeader = c.req.header('Authorization');
+    if (!authHeader || authHeader.split(" ").length < 2 || authHeader.split(' ')[0] !== 'Bearer') {
+      return c.json({message: "Unauthorized - Missing or invalid Bearer token"}, 401);
+    }
 
-
-//  POST /events (requires authentication)
-eventRouter.post('/', async (c) => {
+    const jwt = authHeader.split(' ')[1];
+    try {
+      const user = await verify(jwt, c.env.JWT_SECRET);
+      if (!user || !user.id) {
+        return c.json({message: "Unauthorized - Invalid token"}, 401);
+      }
+      c.set('currentUserId', user.id as string);
+      await next();
+    } catch (error) {
+      console.error('JWT verification error:', error);
+      return c.json({message: "Unauthorized - Token verification failed"}, 401);
+    }
+  },
+  async (c) => {
   try {
-    const body = await c.req.json();
-    const validatedData = createEventSchema.parse(body);
-    const { title, description, isPrivate, slots } = validatedData;
 
+    const curUserId = c.get('currentUserId');
     const db = c.get('db');
-    
-    // TODO: Replace with actual authenticated user ID
-    const userId = c.req.header('user-id') || 'mock-user-id';
 
-    // Use transaction to create event and slots atomically
-    const result = await db.transaction(async (tx) => {
+    const userEmail = await db
+      .select({
+        email:users.email
+      })
+      .from(users)
+      .where(eq(users.id,curUserId))
+      .limit(1)
 
-      const newEvent = await tx
-        .insert(events)
-        .values({
-          title,
-          description,
-          isPrivate,
-          userId,
-        })
-        .returning();
-
-      const eventId = newEvent[0].id;
-      const slotsToInsert = slots.map(slot => ({
-        eventId,
-        startTime: new Date(slot.startTime),
-        endTime: new Date(slot.endTime),
-        maxBookings: slot.maxBookings,
-      }));
-
-      const createdSlots = await tx
-        .insert(eventSlots)
-        .values(slotsToInsert)
-        .returning();
-
-      return {
-        event: newEvent[0],
-        slots: createdSlots
-      };
-    });
+    const userBookings = await db
+      .select({
+        id: bookings.id,
+        guestName: bookings.guestName,
+        guestEmail: bookings.guestEmail,
+        status: bookings.status,
+        bookedAt: bookings.bookedAt,
+        slot: {
+          id: eventSlots.id,
+          startTime: eventSlots.startTime,
+          endTime: eventSlots.endTime
+        },
+        event: {
+          id: events.id,
+          title: events.title,
+          description: events.description
+        }
+      })
+      .from(bookings)
+      .leftJoin(eventSlots, eq(bookings.slotId, eventSlots.id))
+      .leftJoin(events, eq(bookings.eventId, events.id))
+      .where(eq(bookings.guestEmail, userEmail[0].email))
+      .orderBy(desc(bookings.bookedAt));
 
     return c.json({
-      message: 'Event created successfully',
-      event: {
-        ...result.event,
-        slots: result.slots
-      }
-    }, 201);
+      bookings: userBookings
+    });
 
   } catch (error) {
     if (error instanceof ZodError) {
@@ -78,7 +86,7 @@ eventRouter.post('/', async (c) => {
       }, 400);
     }
 
-    console.error('Create event error:', error);
+    console.error('Get bookings error:', error);
     return c.json({ error: 'Internal server error' }, 500);
   }
 });
@@ -120,7 +128,7 @@ eventRouter.get('/list', async (c) => {
 });
 
 // GET /events/:id (public)
-eventRouter.get('/:id', async (c) => {
+eventRouter.get('details/:id', async (c) => {
   try {
     const eventId = c.req.param('id');
     const db = c.get('db');
@@ -311,42 +319,77 @@ eventRouter.post('/:id/bookings', async (c) => {
   }
 });
 
-//  GET /bookings?email=user@example.com (public)
-eventRouter.get('/bookings', async (c) => {
-  try {
-    const query = c.req.query();
-    const validatedQuery = getBookingsQuerySchema.parse(query);
-    const { email } = validatedQuery;
+// Protected routes (require authentication)
+// Authenticator
+eventRouter.use('*',)
 
-    const db = c.get('db');
+// POST /events (private) - Create Event
+eventRouter.post('/',
+  async (c ,next) => {
+    const authHeader = c.req.header('Authorization');
+    if (!authHeader || authHeader.split(" ").length < 2 || authHeader.split(' ')[0] !== 'Bearer') {
+      return c.json({message: "Unauthorized - Missing or invalid Bearer token"}, 401);
+    }
 
-    const userBookings = await db
-      .select({
-        id: bookings.id,
-        guestName: bookings.guestName,
-        guestEmail: bookings.guestEmail,
-        status: bookings.status,
-        bookedAt: bookings.bookedAt,
-        slot: {
-          id: eventSlots.id,
-          startTime: eventSlots.startTime,
-          endTime: eventSlots.endTime
-        },
+    const jwt = authHeader.split(' ')[1];
+    try {
+      const user = await verify(jwt, c.env.JWT_SECRET);
+      if (!user || !user.id) {
+        return c.json({message: "Unauthorized - Invalid token"}, 401);
+      }
+      c.set('currentUserId', user.id as string);
+      await next();
+    } catch (error) {
+      console.error('JWT verification error:', error);
+      return c.json({message: "Unauthorized - Token verification failed"}, 401);
+    }
+  },
+   async (c) => {
+    try {
+      const body = await c.req.json();
+      const validatedData = createEventSchema.parse(body);
+      const { title, description, isPrivate, slots } = validatedData;
+
+      const db = c.get('db');
+      const userId = c.get('currentUserId');
+
+      const result = await db.transaction(async (tx) => {
+        const newEvent = await tx
+          .insert(events)
+          .values({
+            title,
+            description,
+            isPrivate,
+            userId,
+          })
+          .returning();
+
+        const eventId = newEvent[0].id;
+        const slotsToInsert = slots.map(slot => ({
+          eventId,
+          startTime: new Date(slot.startTime),
+          endTime: new Date(slot.endTime),
+          maxBookings: slot.maxBookings,
+        }));
+
+        const createdSlots = await tx
+          .insert(eventSlots)
+          .values(slotsToInsert)
+          .returning();
+
+        return {
+          event: newEvent[0],
+          slots: createdSlots
+        };
+      });
+
+      return c.json({
+        message: 'Event created successfully',
         event: {
-          id: events.id,
-          title: events.title,
-          description: events.description
+          ...result.event,
+          slots: result.slots
         }
-      })
-      .from(bookings)
-      .leftJoin(eventSlots, eq(bookings.slotId, eventSlots.id))
-      .leftJoin(events, eq(bookings.eventId, events.id))
-      .where(eq(bookings.guestEmail, email))
-      .orderBy(desc(bookings.bookedAt));
-
-    return c.json({
-      bookings: userBookings
-    });
+      }, 201);
 
   } catch (error) {
     if (error instanceof ZodError) {
@@ -359,9 +402,11 @@ eventRouter.get('/bookings', async (c) => {
       }, 400);
     }
 
-    console.error('Get bookings error:', error);
+    console.error('Create event error:', error);
     return c.json({ error: 'Internal server error' }, 500);
   }
 });
+
+
 
 export { eventRouter };
